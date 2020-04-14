@@ -15,6 +15,7 @@
 	along with solidity.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "libsolidity/formal/SymbolicVariables.h"
 #include <libsolidity/formal/SMTEncoder.h>
 
 #include <libsolidity/ast/TypeProvider.h>
@@ -923,9 +924,10 @@ void SMTEncoder::endVisit(IndexAccess const& _indexAccess)
 		return;
 	}
 
-	solAssert(array, "");
+	auto arrayVar = dynamic_pointer_cast<smt::SymbolicArrayVariable>(array);
+	solAssert(arrayVar, "");
 	defineExpr(_indexAccess, smt::Expression::select(
-		array->currentValue(),
+		arrayVar->array(),
 		expr(*_indexAccess.indexExpression())
 	));
 	setSymbolicUnknownValue(
@@ -1004,8 +1006,9 @@ void SMTEncoder::arrayIndexAssignment(Expression const& _expr, smt::Expression c
 			m_context.addAssertion(m_context.newValue(*varDecl) == store);
 			// Update the SMT select value after the assignment,
 			// necessary for sound models.
+			auto arrayVar = dynamic_pointer_cast<smt::SymbolicArrayVariable>(m_context.variable(*varDecl));
 			defineExpr(*indexAccess, smt::Expression::select(
-				m_context.variable(*varDecl)->currentValue(),
+				arrayVar->array(),
 				expr(*indexAccess->indexExpression())
 			));
 

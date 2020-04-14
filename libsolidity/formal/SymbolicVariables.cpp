@@ -207,36 +207,6 @@ SymbolicMappingVariable::SymbolicMappingVariable(
 	solAssert(isMapping(m_type->category()), "");
 }
 
-SymbolicArrayVariable::SymbolicArrayVariable(
-	frontend::TypePointer _type,
-	frontend::TypePointer _originalType,
-	string _uniqueName,
-	EncodingContext& _context
-):
-	SymbolicVariable(_type, _originalType, move(_uniqueName), _context)
-{
-	solAssert(isArray(m_type->category()), "");
-}
-
-SymbolicArrayVariable::SymbolicArrayVariable(
-	SortPointer _sort,
-	string _uniqueName,
-	EncodingContext& _context
-):
-	SymbolicVariable(move(_sort), move(_uniqueName), _context)
-{
-	solAssert(m_sort->kind == Kind::Array, "");
-}
-
-smt::Expression SymbolicArrayVariable::currentValue(frontend::TypePointer const& _targetType) const
-{
-	optional<smt::Expression> conversion = symbolicTypeConversion(m_originalType, _targetType);
-	if (conversion)
-		return *conversion;
-
-	return SymbolicVariable::currentValue(_targetType);
-}
-
 SymbolicEnumVariable::SymbolicEnumVariable(
 	frontend::TypePointer _type,
 	string _uniqueName,
@@ -285,4 +255,49 @@ smt::Expression SymbolicTupleVariable::component(
 		return *conversion;
 
 	return smt::Expression::tuple_get(currentValue(), _index);
+}
+
+SymbolicArrayVariable::SymbolicArrayVariable(
+	frontend::TypePointer _type,
+	frontend::TypePointer _originalType,
+	string _uniqueName,
+	EncodingContext& _context
+):
+	SymbolicVariable(_type, _originalType, move(_uniqueName), _context)
+{
+	solAssert(isArray(m_type->category()), "");
+}
+
+SymbolicArrayVariable::SymbolicArrayVariable(
+	SortPointer _sort,
+	string _uniqueName,
+	EncodingContext& _context
+):
+	SymbolicVariable(move(_sort), move(_uniqueName), _context)
+{
+	solAssert(m_sort->kind == Kind::Array, "");
+}
+
+smt::Expression SymbolicArrayVariable::currentValue(frontend::TypePointer const& _targetType) const
+{
+	optional<smt::Expression> conversion = symbolicTypeConversion(m_originalType, _targetType);
+	if (conversion)
+		return *conversion;
+
+	return m_pair.currentValue();
+}
+
+smt::Expression SymbolicArrayVariable::valueAtIndex(int _index) const
+{
+	return m_pair.valueAtIndex(_index);
+}
+
+smt::Expression SymbolicArrayVariable::array()
+{
+	return m_pair.component(0);
+}
+
+smt::Expression SymbolicArrayVariable::length()
+{
+	return m_pair.component(1);
 }

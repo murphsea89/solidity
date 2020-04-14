@@ -640,10 +640,20 @@ vector<VariableDeclaration const*> CHC::stateVariablesIncludingInheritedAndPriva
 
 vector<smt::SortPointer> CHC::stateSorts(ContractDefinition const& _contract)
 {
-	return applyMap(
-		stateVariablesIncludingInheritedAndPrivate(_contract),
-		[](auto _var) { return smt::smtSortAbstractFunction(*_var->type()); }
-	);
+	vector<smt::SortPointer> stateSorts;
+	for (auto const& var: stateVariablesIncludingInheritedAndPrivate(_contract))
+	{
+		auto symbType = smt::smtSortAbstractFunction(*var->type());
+		if (var->type()->category() == Type::Category::Array)
+			stateSorts.push_back(std::make_shared<smt::TupleSort>(
+				"array_length_pair",
+				std::vector<std::string>{"array", "length"},
+				std::vector<smt::SortPointer>{symbType, smt::SortProvider::intSort}
+			));
+		else
+			stateSorts.push_back(symbType);
+	}
+	return stateSorts;
 }
 
 smt::SortPointer CHC::constructorSort()

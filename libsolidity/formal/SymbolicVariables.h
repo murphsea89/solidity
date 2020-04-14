@@ -203,29 +203,6 @@ public:
 };
 
 /**
- * Specialization of SymbolicVariable for Array
- */
-class SymbolicArrayVariable: public SymbolicVariable
-{
-public:
-	SymbolicArrayVariable(
-		frontend::TypePointer _type,
-		frontend::TypePointer _originalTtype,
-		std::string _uniqueName,
-		EncodingContext& _context
-	);
-	SymbolicArrayVariable(
-		SortPointer _sort,
-		std::string _uniqueName,
-		EncodingContext& _context
-	);
-
-	SymbolicArrayVariable(SymbolicArrayVariable&&) = default;
-
-	Expression currentValue(frontend::TypePointer const& _targetType = TypePointer{}) const override;
-};
-
-/**
  * Specialization of SymbolicVariable for Enum
  */
 class SymbolicEnumVariable: public SymbolicVariable
@@ -261,6 +238,45 @@ public:
 		TypePointer _fromType = nullptr,
 		TypePointer _toType = nullptr
 	);
+};
+
+/**
+ * Specialization of SymbolicVariable for Array
+ */
+class SymbolicArrayVariable: public SymbolicVariable
+{
+public:
+	SymbolicArrayVariable(
+		frontend::TypePointer _type,
+		frontend::TypePointer _originalTtype,
+		std::string _uniqueName,
+		EncodingContext& _context
+	);
+	SymbolicArrayVariable(
+		SortPointer _sort,
+		std::string _uniqueName,
+		EncodingContext& _context
+	);
+
+	SymbolicArrayVariable(SymbolicArrayVariable&&) = default;
+
+	Expression currentValue(frontend::TypePointer const& _targetType = TypePointer{}) const override;
+	Expression valueAtIndex(int _index) const override;
+	Expression resetIndex() override { SymbolicVariable::resetIndex(); return m_pair.resetIndex(); }
+	Expression increaseIndex() override { SymbolicVariable::increaseIndex(); return m_pair.increaseIndex(); }
+	Expression array();
+	Expression length();
+
+private:
+	SymbolicTupleVariable m_pair{
+		std::make_shared<TupleSort>(
+			"array_length_pair",
+			std::vector<std::string>{"array", "length"},
+			std::vector<SortPointer>{m_sort, SortProvider::intSort}
+		),
+		m_uniqueName + "_length_pair",
+		m_context
+	};
 };
 
 }
