@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "libsolidity/formal/Sorts.h"
 #include <libsolidity/formal/SolverInterface.h>
 #include <libsolidity/formal/SSAVariable.h>
 #include <libsolidity/ast/Types.h>
@@ -266,6 +267,8 @@ public:
 	Expression increaseIndex() override { SymbolicVariable::increaseIndex(); return m_pair.increaseIndex(); }
 	Expression array();
 	Expression length();
+
+	SortPointer tupleSort() { return m_pair.sort(); }
 
 private:
 	SymbolicTupleVariable m_pair{

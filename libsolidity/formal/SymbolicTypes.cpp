@@ -55,17 +55,18 @@ SortPointer smtSort(frontend::Type const& _type)
 	}
 	case Kind::Array:
 	{
+		shared_ptr<ArraySort> array;
 		if (isMapping(_type.category()))
 		{
 			auto mapType = dynamic_cast<frontend::MappingType const*>(&_type);
 			solAssert(mapType, "");
-			return make_shared<ArraySort>(smtSortAbstractFunction(*mapType->keyType()), smtSortAbstractFunction(*mapType->valueType()));
+			array = make_shared<ArraySort>(smtSortAbstractFunction(*mapType->keyType()), smtSortAbstractFunction(*mapType->valueType()));
 		}
 		else if (isStringLiteral(_type.category()))
 		{
 			auto stringLitType = dynamic_cast<frontend::StringLiteralType const*>(&_type);
 			solAssert(stringLitType, "");
-			return make_shared<ArraySort>(SortProvider::intSort, SortProvider::intSort);
+			array = make_shared<ArraySort>(SortProvider::intSort, SortProvider::intSort);
 		}
 		else
 		{
@@ -78,8 +79,14 @@ SortPointer smtSort(frontend::Type const& _type)
 				solAssert(false, "");
 
 			solAssert(arrayType, "");
-			return make_shared<ArraySort>(SortProvider::intSort, smtSortAbstractFunction(*arrayType->baseType()));
+			array = make_shared<ArraySort>(SortProvider::intSort, smtSortAbstractFunction(*arrayType->baseType()));
 		}
+		string tupleName = _type.identifier() + "_tuple";
+		return make_shared<TupleSort>(
+			tupleName,
+			vector<string>{tupleName + "_accessor_array", tupleName + "_accessor_length"},
+			vector<SortPointer>{array, SortProvider::intSort}
+		);
 	}
 	case Kind::Tuple:
 	{
