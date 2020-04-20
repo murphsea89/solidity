@@ -1412,12 +1412,10 @@ void IRGeneratorForStatements::handleVariableReference(
 	Expression const& _referencingExpression
 )
 {
-	// TODO for the constant case, we have to be careful:
-	// If the value is visited twice, `defineExpression` is called twice on
-	// the same expression.
-	solUnimplementedAssert(!_variable.isConstant(), "");
 	solUnimplementedAssert(!_variable.immutable(), "");
-	if (m_context.isLocalVariable(_variable))
+	if (_variable.isStateVariable() && _variable.isConstant())
+	    define(_referencingExpression) << constantValueFunction(_variable) << "()\n";
+	else if (m_context.isLocalVariable(_variable))
 		setLValue(_referencingExpression, IRLValue{
 			*_variable.annotation().type,
 			IRLValue::Stack{m_context.localVariable(_variable)}
@@ -1758,6 +1756,30 @@ void IRGeneratorForStatements::appendAndOrOperatorCode(BinaryOperation const& _b
 	_binOp.rightExpression().accept(*this);
 	assign(value, _binOp.rightExpression());
 	m_code << "}\n";
+}
+
+string IRGeneratorForStatements::constantValueFunction(VariableDeclaration const& _constant)
+{
+	string functionName = "constant_" + _constant.name() + "_" + to_string(_constant.id());
+	return m_context.functionCollector().createFunction(functionName, [&] {
+		Whiskers templ(R"(
+			function <functionName>() -> <ret> {
+				<code>
+				<ret> := <value>
+			}
+		)");
+		templ("functionName", functionName);
+		// TODO this should use "generate expression"
+		// and should also handle type converisons properly.
+		IRGeneratorForStatements generator(m_context, m_utils);
+		_constant.value()->accept(generator);
+		templ("code", generator.code());
+		IRVariable value(*_constant.value());
+		templ("value", value.commaSeparatedList());
+		templ("ret", IRVariable("ret", *_constant.type()).commaSeparatedList());
+
+		return templ.render();
+	});
 }
 
 void IRGeneratorForStatements::writeToLValue(IRLValue const& _lvalue, IRVariable const& _value)
