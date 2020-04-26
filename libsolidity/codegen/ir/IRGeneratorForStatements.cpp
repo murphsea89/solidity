@@ -575,13 +575,14 @@ void IRGeneratorForStatements::endVisit(FunctionCall const& _functionCall)
 					"Only internal function calls implemented for libraries"
 				);
 
+	std::map<ASTPointer<Expression const>, string> expressionCache;
 	solUnimplementedAssert(!functionType->bound(), "");
 	switch (functionType->kind())
 	{
 	case FunctionType::Kind::Internal:
 	{
 		vector<string> args;
-		for (unsigned i = 0; i < arguments.size(); ++i)
+		for (size_t i = 0; i < arguments.size(); ++i)
 			if (functionType->takesArbitraryParameters())
 				args.emplace_back(IRVariable(*arguments[i]).commaSeparatedList());
 			else
@@ -807,15 +808,40 @@ void IRGeneratorForStatements::endVisit(FunctionCall const& _functionCall)
 	{
 		break;
 	}
-	case FunctionType::Kind::GasLeft:
+	case FunctionType::Kind::AddMod:
+	case FunctionType::Kind::MulMod:
 	{
-		define(_functionCall) << "gas()\n";
-		break;
+		solAssert(arguments.size() == 3 && parameterTypes.size() == 3, "");
+		Whiskers templ("if iszero(<var>) { revert(0, 0) }\n");
+		string var = m_context.newYulVariable();
+		m_code << "let " << var << " := " << expressionAsType(*arguments[2], *(parameterTypes[2])) << "\n";
+		bool inserted = expressionCache.insert(make_pair(arguments[2], var)).second;
+		solAssert(inserted, "");
+		templ("var", var);
+		m_code << templ.render();
+		[[fallthrough]];
 	}
+	case FunctionType::Kind::GasLeft:
 	case FunctionType::Kind::Selfdestruct:
+	case FunctionType::Kind::BlockHash:
 	{
-		solAssert(arguments.size() == 1, "");
-		define(_functionCall) << "selfdestruct(" << expressionAsType(*arguments.front(), *parameterTypes.front()) << ")\n";
+		static map<FunctionType::Kind, string> functions = {
+			{FunctionType::Kind::AddMod, "addmod"},
+			{FunctionType::Kind::MulMod, "mulmod"},
+			{FunctionType::Kind::GasLeft, "gas"},
+			{FunctionType::Kind::Selfdestruct, "selfdestruct"},
+			{FunctionType::Kind::BlockHash, "blockhash"},
+		};
+		solAssert(functions.find(functionType->kind()) != functions.end(), "");
+		string args;
+		for (size_t i = 0; i < arguments.size(); ++i)
+		{
+			if (expressionCache.find(arguments[i]) != expressionCache.end())
+				args += (args.empty() ? "" : ", ") + expressionCache[arguments[i]];
+			else
+				args += (args.empty() ? "" : ", ") + expressionAsType(*arguments[i], *(parameterTypes[i]));
+		}
+		define(_functionCall) << functions[functionType->kind()] << "(" << args << ")\n";
 		break;
 	}
 	case FunctionType::Kind::Log0:
