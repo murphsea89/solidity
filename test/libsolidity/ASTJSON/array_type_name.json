@@ -16,7 +16,6 @@
       "baseContracts": [],
       "contractDependencies": [],
       "contractKind": "contract",
-      "documentation": null,
       "fullyImplemented": true,
       "id": 4,
       "linearizedBaseContracts":
@@ -33,7 +32,6 @@
           "mutability": "mutable",
           "name": "i",
           "nodeType": "VariableDeclaration",
-          "overrides": null,
           "scope": 4,
           "src": "13:8:1",
           "stateVariable": true,
@@ -58,7 +56,6 @@
               }
             },
             "id": 2,
-            "length": null,
             "nodeType": "ArrayTypeName",
             "src": "13:6:1",
             "typeDescriptions":
@@ -67,7 +64,6 @@
               "typeString": "uint256[]"
             }
           },
-          "value": null,
           "visibility": "internal"
         }
       ],

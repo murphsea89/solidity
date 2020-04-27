@@ -22,7 +22,6 @@
           "mutability": "mutable",
           "name": "a",
           "nodeType": "VariableDeclaration",
-          "overrides": null,
           "scope": 3,
           "src": "11:9:1",
           "stateVariable": false,
@@ -44,7 +43,6 @@
               "typeString": "uint256"
             }
           },
-          "value": null,
           "visibility": "internal"
         }
       ],

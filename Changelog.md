@@ -2,6 +2,7 @@
 
 Breaking changes:
  * Type Checker: Disallow virtual for library functions.
+ * JSON AST: Removes members with ``null`` value from JSON output.
 
 Language Features:
 

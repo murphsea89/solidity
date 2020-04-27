@@ -16,7 +16,6 @@
       "baseContracts": [],
       "contractDependencies": [],
       "contractKind": "contract",
-      "documentation": null,
       "fullyImplemented": true,
       "id": 17,
       "linearizedBaseContracts":
@@ -61,7 +60,6 @@
           "mutability": "mutable",
           "name": "a",
           "nodeType": "VariableDeclaration",
-          "overrides": null,
           "scope": 17,
           "src": "40:20:1",
           "stateVariable": true,
@@ -76,7 +74,6 @@
             "id": 7,
             "keyType":
             {
-              "contractScope": null,
               "id": 5,
               "name": "C",
               "nodeType": "UserDefinedTypeName",
@@ -108,7 +105,6 @@
               }
             }
           },
-          "value": null,
           "visibility": "internal"
         },
         {
@@ -117,7 +113,6 @@
           "mutability": "mutable",
           "name": "b",
           "nodeType": "VariableDeclaration",
-          "overrides": null,
           "scope": 17,
           "src": "66:26:1",
           "stateVariable": true,
@@ -162,7 +157,6 @@
               }
             }
           },
-          "value": null,
           "visibility": "internal"
         },
         {
@@ -171,7 +165,6 @@
           "mutability": "mutable",
           "name": "c",
           "nodeType": "VariableDeclaration",
-          "overrides": null,
           "scope": 17,
           "src": "98:20:1",
           "stateVariable": true,
@@ -186,7 +179,6 @@
             "id": 15,
             "keyType":
             {
-              "contractScope": null,
               "id": 13,
               "name": "E",
               "nodeType": "UserDefinedTypeName",
@@ -218,7 +210,6 @@
               }
             }
           },
-          "value": null,
           "visibility": "internal"
         }
       ],
